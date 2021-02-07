@@ -39,7 +39,7 @@ tb_config = TensorBoardOutputConfig(
 
 # The instance to train on
 framework_version = "1.6.0"
-instance_type = 'ml.p3.16xlarge'
+instance_type = 'ml.p3.16xlarge'  # The library supports ml.p3.16xlarge, ml.p3dn.24xlarge, and ml.p4d.24xlarge instances at this time.
 instance_count = 2
 
 
