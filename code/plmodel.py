@@ -3,13 +3,10 @@ import sys
 import pandas as pd
 import numpy as np
 from argparse import ArgumentParser
-from sklearn.datasets import make_regression
 
 import torch
 import torch.nn.functional as F
 import pytorch_lightning as pl
-# Use bolts just to grab a handful of data
-from pl_bolts.datamodules import SklearnDataModule
 
 
 class LinearRegression(pl.LightningModule):
