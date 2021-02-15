@@ -17,7 +17,7 @@ def cli_main(args, name: str = 'deep_lob'):
 
     # Create some toy data
     input_dim = args.input_dim
-    n_samples = args.n_samples
+    n_samples = args.nsamples
     print(f'feature dimension: ({n_samples}, {input_dim})')
     rng = np.random.RandomState(0)
     X, y, coef = make_regression(n_samples, input_dim, random_state=rng, coef=True)
@@ -110,8 +110,8 @@ if __name__ == '__main__':
   
   parser.add_argument('--model-dir', type=str, default=os.environ['SM_MODEL_DIR'])
   parser.add_argument('--input-dim', type=int, default=40)
-  parser.add_argument('--n-samples', type=int, default=50000)
+  parser.add_argument('--nsamples', type=int, default=50000)
  
   args = parser.parse_args()
-  main_cli(args, name='deep_lob')
+  cli_main(args, name='deep_lob')
   print("Job finished!")
