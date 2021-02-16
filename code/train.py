@@ -101,13 +101,19 @@ def cli_main(args, name: str = 'deep_lob'):
     
     
 if __name__ == '__main__':
+  
+  resource_config = json.loads(os.environ.get("SM_RESOURCE_CONFIG", "{}"))
+  print(os.environ)
+  #if len(resource_config)>0:
+    # On sagemaker we need to ensure that the path
+    #os.environ["NCCL_SOCKET_IFNAME"] = resource_config["network_interface_name"]
 
   parser = ArgumentParser()
   parser = LinearRegression.add_model_specific_args(parser)
   parser = SklearnDataModule.add_argparse_args(parser)
   parser = pl.Trainer.add_argparse_args(parser)
   
-  parser.add_argument('--model-dir', type=str, default=os.environ['SM_MODEL_DIR'])
+  parser.add_argument('--model-dir', type=str, default=os.environ.get('SM_MODEL_DIR', 'model_output'))
   parser.add_argument('--input-dim', type=int, default=40)
   parser.add_argument('--nsamples', type=int, default=50000)
  
