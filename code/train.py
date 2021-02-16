@@ -80,9 +80,8 @@ def cli_main(args, name: str = 'deep_lob'):
 
     # Trainer    
     trainer_kwargs = dict( 
-        gpus=os.environ.get('SM_NUM_GPUS',None),
+        gpus=int(os.environ.get('SM_NUM_GPUS',-1)),
         default_root_dir=outputdata_dir,
-        gradient_clip_val=2,
         progress_bar_refresh_rate=10,
         logger=logger,
         callbacks=callbacks,
