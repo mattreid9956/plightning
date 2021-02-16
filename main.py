@@ -2,6 +2,7 @@
 
 import json
 import boto3
+import time
 import sagemaker
 from sagemaker.pytorch import PyTorch
 from sagemaker.debugger import TensorBoardOutputConfig
@@ -12,7 +13,7 @@ sagemaker_session = sagemaker.Session()
 
 
 # The bucket containig our input data
-bucket = 's3://deep-q-captial-data'
+bucket = 's3://<SPECIFY-YOUR-BUCKET>'
 
 
 # The IAM Role which SageMaker will impersonate to run the estimator
@@ -26,7 +27,7 @@ role = sagemaker.get_execution_role()
 bucket = "s3://MY_TEST_BUCKET"
 output_path = f'{bucket}/sagemaker-jobs'
 # Set the job name and show it
-trial_name = "dqc-V0-btcusd-coinbase"
+trial_name = "experiment-V0"
 job_name = "torch-spot-{}-{}".format(trial_name, time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime()))
 print(f"Job name: {job_name}")
 output_jobs_path = f'{output_path}/{job_name}'
@@ -68,7 +69,7 @@ estimator = PyTorch(
         # set the distributed params
         'profiler': True,
         "accelerator": "ddp",
-        "plugins": "ddp_sharded",
+        #"plugins": "ddp_sharded",
 
         # DataModule
         #"num_workers": 4,        
@@ -77,7 +78,7 @@ estimator = PyTorch(
     #max_wait=600,
     # Now set checkpoint s3 path, local default this will be /opt/ml/checkpoints/
     checkpoint_s3_uri=checkpoint_s3_uri,
-    distribution={'smdistributed':{'dataparallel':{enabled': True}}}
+    #distribution={'smdistributed':{'dataparallel':{enabled': True}}}
 )
 
 
