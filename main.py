@@ -87,6 +87,7 @@ estimator = PyTorch(
         'batch_size': 8,
         "auto_lr_find": True,
         "gradient_clip_val": 2,
+        "num_nodes": instance_count,
         
         # set the distributed params
         'profiler': True,
