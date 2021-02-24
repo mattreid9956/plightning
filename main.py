@@ -39,10 +39,32 @@ tb_config = TensorBoardOutputConfig(
 
 
 # The instance to train on
-framework_version = "1.6.0"
-instance_type = 'ml.p3.16xlarge'  # The library supports ml.p3.16xlarge, ml.p3dn.24xlarge, and ml.p4d.24xlarge instances at this time.
+framework_version = "1.6.0" # 1.7.1
+instance_type = 'ml.p3.8xlarge'  # The library supports ml.p3.16xlarge, ml.p3dn.24xlarge, and ml.p4d.24xlarge instances at this time.
+gpus_per_host = 4
 instance_count = 2
+volume_size = 2 # Number of Gb disc to use, for this example we dont really need any...
+max_run = 5 # Minutes  
 
+# distributed options
+mpi_options = {
+    "enabled": True,
+    "processes_per_host": gpus_per_host,
+    "custom_mpi_options":"-verbose --NCCL_DEBUG=INFO --mca btl_vader_single_copy_mechanism none"
+  }
+#     "custom_mpi_options" : "--mca btl_vader_single_copy_mechanism none "
+
+# SDP distribution method enabled here
+# smdistributed_options = {
+#     "dataparallel": {
+#         "enabled": True
+#     }
+# }
+
+distributions = {
+    "mpi": mpi_options,
+#     "smdistributed": smdistributed_options # Dont use this yet not setup...
+}
 
 # Creates a new PyTorch Estimator with params
 estimator = PyTorch(
@@ -74,11 +96,14 @@ estimator = PyTorch(
         # DataModule
         #"num_workers": 4,        
     },
-    #use_spot_instances=True,
-    #max_wait=600,
+    use_spot_instances=True,
+    max_wait=max_run * 60,
+    max_run=max_run * 60,,
     # Now set checkpoint s3 path, local default this will be /opt/ml/checkpoints/
     checkpoint_s3_uri=checkpoint_s3_uri,
-    #distribution={'smdistributed':{'dataparallel':{enabled': True}}}
+    tensorboard_output_config=tb_config,
+    distributions=distributions,
+    volume_size=volume_size,
 )
 
 
