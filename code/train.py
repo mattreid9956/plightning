@@ -3,6 +3,7 @@ import json
 from argparse import ArgumentParser
 from sklearn.datasets import make_regression
 import pandas as pd
+import numpy as np
 
 import torch
 import pytorch_lightning as pl
@@ -28,7 +29,7 @@ def cli_main(args, name: str = 'deep_lob'):
     # Create the lightning datamodule
     dm_kwargs = dict(
         X=X, y=y, val_split=0.2, test_split=0.1, 
-        num_workers=0, random_state=rng, shuffle=False, 
+        num_workers=6, random_state=rng, shuffle=False, 
         drop_last=True, pin_memory=True
     )
     dm = SklearnDataModule.from_argparse_args(args, **dm_kwargs)
