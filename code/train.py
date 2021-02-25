@@ -49,7 +49,8 @@ def cli_main(args, name: str = 'deep_lob'):
     
     # Configure checkpoints and paths
     outputdata_dir = os.environ.get('SM_OUTPUT_DATA_DIR', 'output')
-    tensorboard_dir = os.path.join(outputdata_dir, 'tensorboard')
+    #tensorboard_dir = os.path.join(outputdata_dir, 'tensorboard')
+    tensorboard_dir = "/opt/ml/output/tensorboard"
     print(tensorboard_dir, os.path.exists(tensorboard_dir))
 
     checkpoint_dir = "/opt/ml/checkpoints" #os.path.join(outputdata_dir, 'checkpoint')
