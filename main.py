@@ -23,8 +23,6 @@ bucket = 's3://<SPECIFY-YOUR-BUCKET>'
 role = sagemaker.get_execution_role()
 
 
-# The bucket containig our input data
-bucket = "s3://MY_TEST_BUCKET"
 output_path = f'{bucket}/sagemaker-jobs'
 # Set the job name and show it
 trial_name = "experiment-V0"
@@ -41,12 +39,12 @@ tb_config = TensorBoardOutputConfig(
 # The instance to train on
 framework_version = "1.6.0" # 1.7.1
 instance_type = 'ml.p3.8xlarge'  # The library supports ml.p3.16xlarge, ml.p3dn.24xlarge, and ml.p4d.24xlarge instances at this time.
-gpus_per_host = 4
+gpus_per_host = 4  # Must relate to instance type, see https://aws.amazon.com/ec2/instance-types/p3/
 instance_count = 2
 volume_size = 2 # Number of Gb disc to use, for this example we dont really need any...
 max_run = 5 # Minutes  
 
-# distributed options
+# distributed options, not really necessary...
 mpi_options = {
     "enabled": True,
     "processes_per_host": gpus_per_host,
