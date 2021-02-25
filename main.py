@@ -34,7 +34,7 @@ output_jobs_path = f'{output_path}/{job_name}'
 checkpoint_s3_uri = f'{output_jobs_path}/checkpoints'
 tb_config = TensorBoardOutputConfig(
     s3_output_path=f"{output_jobs_path}/tensorboard",
-    container_local_output_path="/opt/ml/output/tensorboard",
+#     container_local_output_path="/opt/ml/output/tensorboard",
 )
 
 
