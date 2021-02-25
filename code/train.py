@@ -52,7 +52,7 @@ def cli_main(args, name: str = 'deep_lob'):
     tensorboard_dir = os.path.join(outputdata_dir, 'tensorboard')
     print(tensorboard_dir, os.path.exists(tensorboard_dir))
 
-    checkpoint_dir = os.path.join(outputdata_dir, 'checkpoint')
+    checkpoint_dir = "/opt/ml/checkpoints" #os.path.join(outputdata_dir, 'checkpoint')
     print(checkpoint_dir, os.path.exists(checkpoint_dir))
 
     logger = pl.loggers.TensorBoardLogger(tensorboard_dir)
