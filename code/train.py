@@ -122,9 +122,15 @@ if __name__ == '__main__':
   
   resource_config = json.loads(os.environ.get("SM_RESOURCE_CONFIG", "{}"))
   print(os.environ)
-  #if len(resource_config)>0:
+    #if len(resource_config)>0:
     # On sagemaker we need to ensure that the path
     #os.environ["NCCL_SOCKET_IFNAME"] = resource_config["network_interface_name"]
+    # COUlD CALL IT NODE_RANK OR GROUP_RANK
+  if resource_config:
+    hosts = resource_config['hosts']
+    current_host = resource_config['current_host']
+    rank = hosts.index(current_host)
+    os.environ['GROUP_RANK'] = str(rank)
 
   parser = ArgumentParser()
   parser = LinearRegression.add_model_specific_args(parser)
