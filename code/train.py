@@ -11,6 +11,7 @@ import pytorch_lightning as pl
 from pl_bolts.datamodules import SklearnDataModule
 
 from plmodel import LinearRegression
+from utils import find_model_path
 
 
 def cli_main(args, name: str = 'deep_lob'):
@@ -55,7 +56,10 @@ def cli_main(args, name: str = 'deep_lob'):
 
     checkpoint_dir = "/opt/ml/checkpoints" #os.path.join(outputdata_dir, 'checkpoint')
     print(checkpoint_dir, os.path.exists(checkpoint_dir))
-
+    has_checkpoints = False
+    if os.path.exists(checkpoint_dir):
+        has_checkpoints = len(os.path.listdir(checkpoint_dir))>0
+    
     logger = pl.loggers.TensorBoardLogger(tensorboard_dir)
     es_cb = pl.callbacks.EarlyStopping(
         monitor="val_loss", 
@@ -89,6 +93,17 @@ def cli_main(args, name: str = 'deep_lob'):
         logger=logger,
         callbacks=callbacks,
     )
+    print(pl_training_kwargs)
+    if args.resume or has_checkpoints:
+        resume_from_checkpoint = utils.find_model_path(mc_cb, "epoch")  # This should be a flag really...
+        if os.path.exists(resume_from_checkpoint):
+            print(f"INFO: Loading latest checkpoint from {resume_from_checkpoint}")
+            # model = AlphaModule.load_from_checkpoint(resume_from_checkpoint)
+            pl_training_kwargs["resume_from_checkpoint"] = resume_from_checkpoint
+        else:
+            raise IOError(
+                f"WTF you should have checkpoints to load from {resume_from_checkpoint}"
+            )
     trainer = pl.Trainer.from_argparse_args(args, **trainer_kwargs)
     tune_result = trainer.tune(model)
     # Fit the model
@@ -119,7 +134,8 @@ if __name__ == '__main__':
   parser.add_argument('--model-dir', type=str, default=os.environ.get('SM_MODEL_DIR', 'model_output'))
   parser.add_argument('--input-dim', type=int, default=40)
   parser.add_argument('--nsamples', type=int, default=50000)
- 
+  parser.add_argument('--resume', default=False, action='store_true')
+  
   args = parser.parse_args()
   cli_main(args, name='deep_lob')
   print("Job finished!")
