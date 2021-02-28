@@ -58,7 +58,7 @@ def cli_main(args, name: str = 'deep_lob'):
     print(checkpoint_dir, os.path.exists(checkpoint_dir))
     has_checkpoints = False
     if os.path.exists(checkpoint_dir):
-        has_checkpoints = len(os.path.listdir(checkpoint_dir))>0
+        has_checkpoints = len(os.listdir(checkpoint_dir))>0
     
     logger = pl.loggers.TensorBoardLogger(tensorboard_dir)
     es_cb = pl.callbacks.EarlyStopping(
