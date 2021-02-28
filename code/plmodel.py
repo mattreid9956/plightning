@@ -18,6 +18,7 @@ class LinearRegression(pl.LightningModule):
         self,
         input_dim: int,
         output_dim: int = 1,
+        hidden_dim: int = 60000,
         bias: bool = True,
         learning_rate: float = 1e-4,
         optimizer: torch.optim.Optimizer = torch.optim.Adam,
@@ -40,6 +41,10 @@ class LinearRegression(pl.LightningModule):
         self.optimizer = optimizer
         layers = [
             torch.nn.Linear(in_features=self.hparams.input_dim, 
+                      out_features=hidden_dim, 
+                      bias=bias)
+            torch.nn.Relu(),
+            torch.nn.Linear(in_features=hidden_dim, 
                       out_features=self.hparams.output_dim, 
                       bias=bias)
          ]
