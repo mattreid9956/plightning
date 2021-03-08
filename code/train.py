@@ -13,6 +13,20 @@ from pl_bolts.datamodules import SklearnDataModule
 from plmodel import LinearRegression
 from utils import find_model_path
 
+def generate_dataset(n_samples:int, input_dim: int = 40, dtype:str = 'linear', 
+                     random_state: np.RandomState = 0, **kw):
+    valid_dtypes = ['linear', 'non-linear']
+    assert dtype in valid_dtypes, f"{dtype} is not an available dataset type to generate, only {valid_dtypes}"
+    kw['coef'] = True
+    X, y, coef = make_regression(n_samples, input_dim, random_state=random_state, **kw)
+    coef = pd.Series(coef)
+    if dtype == "non-linear":
+        # For now just make it a squared function
+        #y = np.expm1((y + abs(y.min())) / 200)
+        y = y**2
+    y = y.reshape(-1, 1)    
+    #y_trans = np.log1p(y)
+    return X, y, coef
 
 def cli_main(args, name: str = 'deep_lob'):
     
@@ -23,7 +37,7 @@ def cli_main(args, name: str = 'deep_lob'):
     n_samples = args.nsamples
     print(f'feature dimension: ({n_samples}, {input_dim})')
     rng = np.random.RandomState(0)
-    X, y, coef = make_regression(n_samples, input_dim, random_state=rng, coef=True)
+    X, y, coef = generate_dataset(n_samples, input_dim, random_state=rng, dtype='non-linear)
     coef = pd.Series(coef)
     y = y.reshape(-1, 1)    
     
