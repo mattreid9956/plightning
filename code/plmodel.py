@@ -42,12 +42,12 @@ class LinearRegression(pl.LightningModule):
         layers = [
             torch.nn.Linear(in_features=self.hparams.input_dim, 
                       out_features=hidden_dim, 
-                      bias=bias)
-            torch.nn.Relu(),
+                      bias=bias),
+            torch.nn.ReLU(),
             torch.nn.Linear(in_features=hidden_dim, 
                       out_features=self.hparams.output_dim, 
                       bias=bias)
-         ]
+        ]
         self.sequential_module = torch.nn.Sequential(*layers)
 
     def forward(self, x):
