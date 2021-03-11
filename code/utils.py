@@ -2,7 +2,7 @@ import os
 import re
 import logging
 import pandas as pd
-import parser
+import parse
 
 import pytorch_lightning as pl
 
@@ -30,7 +30,7 @@ def find_model_path(cpcb: pl.callbacks.model_checkpoint.ModelCheckpoint, mode: s
    
     res = []
     for f in files:
-        res.append(search(pattern, f).named)
+        res.append(parse.search(pattern, f).named)
     res = pd.DataFrame(res, index=cpcb.dirpath + "/" + files)
     _logger.info(f"Parsed {len(res)} checkpoint files:\n{res}")
     

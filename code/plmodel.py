@@ -18,19 +18,17 @@ class LinearRegression(pl.LightningModule):
         self,
         input_dim: int,
         output_dim: int = 1,
-        hidden_dim: int = 60000,
-        bias: bool = True,
-        learning_rate: float = 1e-4,
-        optimizer: torch.optim.Optimizer = torch.optim.Adam,
-        l1_strength: float = 0.0,
-        l2_strength: float = 0.0,
+        hidden_dim: int = 200,
+        lr: float = 1e-1,
+        optimizer: torch.optim.Optimizer = torch.optim.AdamW,
+        l1_strength: float = 0.,
+        l2_strength: float = 0.,
         **kwargs
     ):
         """
         Args:
             input_dim: number of dimensions of the input (1+)
             output_dim: number of dimensions of the output (default=1)
-            bias: If false, will not use $+b$
             learning_rate: learning_rate for the optimizer
             optimizer: the optimizer to use (default='Adam')
             l1_strength: L1 regularization strength (default=None)
@@ -41,12 +39,16 @@ class LinearRegression(pl.LightningModule):
         self.optimizer = optimizer
         layers = [
             torch.nn.Linear(in_features=self.hparams.input_dim, 
-                      out_features=hidden_dim, 
-                      bias=bias),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=hidden_dim, 
+                      out_features=self.hparams.hidden_dim, 
+                      ),
+            torch.nn.Hardswish(),
+            torch.nn.Linear(in_features=self.hparams.hidden_dim,
+                      out_features=self.hparams.hidden_dim,
+                      ),
+            torch.nn.LeakyReLU(0.01),
+            torch.nn.Linear(in_features=self.hparams.hidden_dim, 
                       out_features=self.hparams.output_dim, 
-                      bias=bias)
+                      )
         ]
         self.sequential_module = torch.nn.Sequential(*layers)
 
@@ -86,16 +88,27 @@ class LinearRegression(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = self.optimizer(self.sequential_module.parameters(), lr=self.hparams.learning_rate)
-        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1)
-        return [optimizer], [lr_scheduler]
+        optimizers = [
+            self.optimizer(self.sequential_module.parameters(), lr=self.hparams.lr)
+        ]
+        schedulers = [
+            {
+                'scheduler': torch.optim.lr_scheduler.ReduceLROnPlateau(optimizers[0]),
+                'monitor': 'train_loss_step',
+                'interval': 'step',
+                'frequency': 10,
+                'strict': True,
+            },
+        ]
+        return optimizers, schedulers
+        #lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5)
 
     @staticmethod
     def add_model_specific_args(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument('--learning_rate', type=float, default=0.0001)
-        parser.add_argument('--input_dim', type=int, default=None)
+        parser.add_argument('--lr', type=float, default=0.1)
+        parser.add_argument('--input_dim', type=int, default=40)
         parser.add_argument('--output_dim', type=int, default=1)
-        parser.add_argument('--bias', default='store_true')
-        parser.add_argument('--batch_size', type=int, default=16)
+        parser.add_argument('--hidden_dim', type=int, default=200)
+        parser.add_argument('--batch_size', type=int, default=32)
         return parser

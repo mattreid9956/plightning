@@ -1,4 +1,4 @@
-pytorch_lightning==1.1.7
-pytorch-lightning-bolts==0.3.0
+pytorch_lightning
+pytorch-lightning-bolts
 tensorboard==2.4.1
-parser==0.5
+parse==19.1.0
