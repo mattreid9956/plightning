@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from sklearn.datasets import make_regression
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 import torch
 import pytorch_lightning as pl
@@ -20,9 +21,10 @@ def generate_dataset(n_samples:int, input_dim: int = 40, dtype:str = 'linear',
     assert dtype in valid_dtypes, f"{dtype} is not an available dataset type to generate, only {valid_dtypes}"
     kw['coef'] = True
     X, y, coef = make_regression(n_samples, input_dim, random_state=random_state, **kw)
-    epsilon = y - np.dot(X, coef)
+    X = X.astype(np.float32)
+    y = y.astype(np.float32) 
     if dtype == "non-linear":
-        y = np.dot(X**2, coef) + epsilon
+        y = np.dot(X**2, coef) + np.random.randn(n_samples)*0.5
         #y = np.expm1((y + abs(y.min())) / 200)
         #y = y**2
         print("Making a non-linear dataset!!!!")
@@ -47,7 +49,7 @@ def cli_main(args, name: str = 'deep_lob'):
     # Create the lightning datamodule
     dm_kwargs = dict(
         X=X, y=y, val_split=0.2, test_split=0.1, 
-        num_workers=4, random_state=rng, shuffle=False, 
+        num_workers=4, random_state=rng, shuffle=True, 
         drop_last=True, pin_memory=True
     )
     dm = SklearnDataModule.from_argparse_args(args, **dm_kwargs)
@@ -68,10 +70,10 @@ def cli_main(args, name: str = 'deep_lob'):
     # Configure checkpoints and paths
     outputdata_dir = os.environ.get('SM_OUTPUT_DATA_DIR', 'output')
     #tensorboard_dir = os.path.join(outputdata_dir, 'tensorboard')
-    tensorboard_dir = "tensorboard" #"/opt/ml/output/tensorboard"
+    tensorboard_dir = "/opt/ml/output/tensorboard"
     print(tensorboard_dir, os.path.exists(tensorboard_dir))
 
-    checkpoint_dir = "checkpoints" #"/opt/ml/checkpoints" #os.path.join(outputdata_dir, 'checkpoint')
+    checkpoint_dir = "/opt/ml/checkpoints" #os.path.join(outputdata_dir, 'checkpoint')
     print(checkpoint_dir, os.path.exists(checkpoint_dir))
     has_checkpoints = False
     if os.path.exists(checkpoint_dir):
@@ -129,9 +131,23 @@ def cli_main(args, name: str = 'deep_lob'):
     result = trainer.fit(model)
     print(result)
     
+    test = trainer.test(model)
+    print(test)
 
-    fit_result = pd.DataFrame(dict(truth=coef, fitted=list(model.parameters())[0].detach().cpu().numpy()[0]))
-    print(fit_result.sort_values('truth', ascending=False).round(1))
+    y_pred = model(torch.from_numpy(X)).cpu().detach().numpy()
+    residual = pd.Series(y.flatten() - y_pred.flatten())
+    f, ax = plt.subplots(1, 1, figsize=(14,10))
+    residual.pipe(lambda x:(x - x.mean())/x.std()).plot(kind='hist', bins=25, ax=ax)
+    f.savefig(os.path.join(args.model_dir, 'residual.png'))
+    
+    if input_dim == 1:
+        f, ax = plt.subplots(1, 1, figsize=(14,10))
+        data = pd.DataFrame(dict(x=X.flatten(), y=y.flatten(), y_pred=y_pred.flatten())).set_index('x').sort_index()
+        data[['y', 'y_pred']].plot(ax=ax)
+        f.savefig(os.path.join(args.model_dir, 'prediction.png'))
+    #fit_result = pd.DataFrame(dict(truth=coef, fitted=list(model.parameters())[0].detach().cpu().numpy()[0]))
+    #print(fit_result.sort_values('truth', ascending=False).round(1))
+    
     
     # After model has been trained, save its state into model_dir which is then copied to back S3
     if not os.path.exists(args.model_dir):
@@ -161,7 +177,7 @@ if __name__ == '__main__':
   
   parser.add_argument('--model-dir', type=str, default=os.environ.get('SM_MODEL_DIR', 'model_output'))
   #parser.add_argument('--input_dim', type=int, default=40)
-  parser.add_argument('--nsamples', type=int, default=50000)
+  parser.add_argument('--nsamples', type=int, default=100000)
   parser.add_argument('--resume', default=False, action='store_true')
   parser.add_argument('--dataset_name', type=str, default='linear' )
 

@@ -1,4 +1,5 @@
 pytorch_lightning
 pytorch-lightning-bolts
 tensorboard==2.4.1
-parse==19.1.0
+parse==1.19.0
+torch-metrics
