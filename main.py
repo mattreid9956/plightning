@@ -13,7 +13,7 @@ sagemaker_session = sagemaker.Session()
 
 
 # The bucket containig our input data
-bucket = 's3://<SPECIFY-YOUR-BUCKET>'
+bucket = 's3://mr-testing-oneoff'
 
 
 # The IAM Role which SageMaker will impersonate to run the estimator
@@ -64,8 +64,30 @@ distributions = {
 #     "smdistributed": smdistributed_options # Dont use this yet not setup...
 }
 
+
+# Model training hyperparameters
+hyperparameters = {
+    # Trainer parameters
+    'max_epochs': 50,
+    'batch_size': 64,
+    "nsamples": 50000,
+    "auto_lr_find": True,
+    "gradient_clip_val": 2,
+    "num_nodes": instance_count,
+
+    # set the distributed params
+    'profiler': True,
+    "accelerator": "ddp",
+    #"plugins": "ddp_sharded",
+
+    # DataModule
+    #"num_workers": 4
+}
+
+
 # Creates a new PyTorch Estimator with params
 estimator = PyTorch(
+    output_path=output_jobs_path,
     # name of the runnable script containing __main__ function (entrypoint)
     entry_point='train.py',
     # path of the folder containing training code. It could also contain a
@@ -79,25 +101,10 @@ estimator = PyTorch(
     instance_type=instance_type,
     # these hyperparameters are passed to the main script as arguments and
     # can be overridden when fine tuning the algorithm
-    hyperparameters={
-        # Trainer parameters
-        'max_epochs': 50,
-        'batch_size': 8,
-        "auto_lr_find": True,
-        "gradient_clip_val": 2,
-        "num_nodes": instance_count,
-        
-        # set the distributed params
-        'profiler': True,
-        "accelerator": "ddp",
-        #"plugins": "ddp_sharded",
-
-        # DataModule
-        #"num_workers": 4,        
-    },
+    hyperparameters=hyperparamters,
     use_spot_instances=True,
     max_wait=max_run * 60,
-    max_run=max_run * 60,,
+    max_run=max_run * 60,
     # Now set checkpoint s3 path, local default this will be /opt/ml/checkpoints/
     checkpoint_s3_uri=checkpoint_s3_uri,
     tensorboard_output_config=tb_config,

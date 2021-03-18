@@ -83,7 +83,7 @@ def cli_main(args, name: str = 'deep_lob'):
     es_cb = pl.callbacks.EarlyStopping(
         monitor="val_loss", 
         min_delta=0., 
-        patience=5, 
+        patience=3, 
         verbose=False, 
         mode="min"
     )
@@ -134,7 +134,7 @@ def cli_main(args, name: str = 'deep_lob'):
     test = trainer.test(model)
     print(test)
 
-    y_pred = model(torch.from_numpy(X)).cpu().detach().numpy()
+    y_pred = model(torch.from_numpy(X).cuda()).cpu().detach().numpy()
     residual = pd.Series(y.flatten() - y_pred.flatten())
     f, ax = plt.subplots(1, 1, figsize=(14,10))
     residual.pipe(lambda x:(x - x.mean())/x.std()).plot(kind='hist', bins=25, ax=ax)
